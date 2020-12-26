@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.3.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.1/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css">
+
+<script class="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"gcfeng.com","root":"/","images":"/images","scheme":"Gemini","version":"8.1.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":true,"lazyload":true,"pangu":true,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}};
+  </script>
+<meta name="description" content="make 是一个 Linux 环境下的构建工具，主要用于管理 C 语言项目。但是实际上，make 不仅仅用来编译源代码，也可以完成一些其他功能。任何只要某个文件发生变化，就需要重新构建的项目，都可以使用 make 来管理。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="make 基础教程">
+<meta property="og:url" content="https://gcfeng.com/make/index.html">
+<meta property="og:site_name" content="gcfeng">
+<meta property="og:description" content="make 是一个 Linux 环境下的构建工具，主要用于管理 C 语言项目。但是实际上，make 不仅仅用来编译源代码，也可以完成一些其他功能。任何只要某个文件发生变化，就需要重新构建的项目，都可以使用 make 来管理。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2019-12-19T03:58:46.000Z">
+<meta property="article:modified_time" content="2020-12-26T05:22:59.355Z">
+<meta property="article:author" content="gcfeng">
+<meta property="article:tag" content="make">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://gcfeng.com/make/">
+
+
+<script class="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+<title>make 基础教程 | gcfeng</title>
+  
+
+
+
+  <noscript>
+  <style>
+  body { margin-top: 2rem; }
+
+  .use-motion .menu-item,
+  .use-motion .sidebar,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header {
+    visibility: visible;
+  }
+
+  .use-motion .header,
+  .use-motion .site-brand-container .toggle,
+  .use-motion .footer { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle,
+  .use-motion .custom-logo-image {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line {
+    transform: scaleX(1);
+  }
+
+  .search-pop-overlay, .sidebar-nav { display: none; }
+  .sidebar-panel { display: block; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">gcfeng</h1>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <section class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#make-%E4%BB%8B%E7%BB%8D"><span class="nav-number">1.</span> <span class="nav-text">make 介绍</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%9B%AE%E6%A0%87target"><span class="nav-number">1.1.</span> <span class="nav-text">目标（target）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%89%8D%E7%BD%AE%E6%9D%A1%E4%BB%B6prerequisites"><span class="nav-number">1.2.</span> <span class="nav-text">前置条件（prerequisites）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%91%BD%E4%BB%A4command"><span class="nav-number">1.3.</span> <span class="nav-text">命令（command）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%98%E9%87%8F%E5%AE%9A%E4%B9%89"><span class="nav-number">1.4.</span> <span class="nav-text">变量定义</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%80%92%E5%BD%92%E5%B1%95%E5%BC%80%E5%BC%8F%E5%8F%98%E9%87%8F"><span class="nav-number">1.4.1.</span> <span class="nav-text">递归展开式变量</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%A4%9A%E8%A1%8C%E5%AE%9A%E4%B9%89"><span class="nav-number">1.4.2.</span> <span class="nav-text">多行定义</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%BF%BD%E5%8A%A0%E5%8F%98%E9%87%8F%E5%80%BC"><span class="nav-number">1.5.</span> <span class="nav-text">追加变量值</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#override-%E6%8C%87%E7%A4%BA%E7%AC%A6"><span class="nav-number">1.6.</span> <span class="nav-text">override 指示符</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#makefile-%E6%9D%A1%E4%BB%B6%E5%88%A4%E6%96%AD"><span class="nav-number">2.</span> <span class="nav-text">Makefile 条件判断</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#makefile-%E5%87%BD%E6%95%B0"><span class="nav-number">3.</span> <span class="nav-text">Makefile 函数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#makefile-%E8%87%AA%E5%8A%A8%E5%8C%96%E5%8F%98%E9%87%8F"><span class="nav-number">4.</span> <span class="nav-text">Makefile 自动化变量</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E4%B8%AA%E4%BE%8B%E5%AD%90"><span class="nav-number">5.</span> <span class="nav-text">一个例子</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">6.</span> <span class="nav-text">参考</span></a></li></ol></div>
+        </section>
+        <!--/noindex-->
+
+        <section class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="gcfeng"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">gcfeng</p>
+  <div class="site-description" itemprop="description">读书笔记、经验分享</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">5</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">7</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+        </section>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+  <a href="https://github.com/gcfeng" class="github-corner" title="关注我" aria-label="关注我" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://gcfeng.com/make/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="gcfeng">
+      <meta itemprop="description" content="读书笔记、经验分享">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="gcfeng">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          make 基础教程
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2019-12-19 11:58:46" itemprop="dateCreated datePublished" datetime="2019-12-19T11:58:46+08:00">2019-12-19</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2020-12-26 13:22:59" itemprop="dateModified" datetime="2020-12-26T13:22:59+08:00">2020-12-26</time>
+      </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Unix/" itemprop="url" rel="index"><span itemprop="name">Unix</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>make 是一个 Linux 环境下的构建工具，主要用于管理 C 语言项目。但是实际上，make 不仅仅用来编译源代码，也可以完成一些其他功能。任何只要某个文件发生变化，就需要重新构建的项目，都可以使用 make 来管理。</p>
+<a id="more"></a>
+<h2 id="make-介绍">make 介绍</h2>
+<p>新建项目后进入到项目目录，在命令行中执行 <code>make</code>，并不会有任何作用。make 本身只是一个命令行工具，它不知道该如何构建项目，需要明确告诉 make 以何种规则来编排项目，比如需要将文件 main.c 编译为 main.o 文件，make 需要知道如下规则： <figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">main.o: main.c</span></span><br><span class="line">    cc -c main.c</span><br></pre></td></tr></table></figure> 当使用 make 来进行构建时，实际上 make 做了以下几件事情： - 确认 main.c 文件存在 - 如果存在 main.o 文件，且 main.o 文件最后修改的时间戳要比 main.c 晚，不会重新编译 - 如果不存在 main.o 文件，或者 main.o 文件最后修改的时间戳要比 main.c 早，进行编译</p>
+<p>一个工程可能有很多这样的规则，这些规则会被写到一个文件中，make 依赖这个文件来进行构建。make 默认会按照 GNUmakefile、makefile、Makefile 的名称顺序来查找该文件，推荐使用 Makefile 来命名。如果需要自定义名称，也可以通过命令行参数来指定： <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">make -f otherName.txt</span><br><span class="line"><span class="comment"># 或者</span></span><br><span class="line">make --file=otherName.txt</span><br></pre></td></tr></table></figure> ## Makefile规则 Makefile 文件包含一系列规则。每条规则的格式如下： <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&lt;target&gt;: &lt;prerequisites&gt;</span><br><span class="line">[tab]   &lt;command&gt;</span><br></pre></td></tr></table></figure> target 是规则的目标，prerequisites 是前置条件，command 是要执行的命令。目标是必需的，前置条件和命令都是可选的，但是两者之中必须至少存在一个。每条规则就是描述在什么前置条件下，该如何构建目标。</p>
+<h3 id="目标target">目标（target）</h3>
+<p>规则的目标通常是最后需要生成的文件名，比如上述的 main.o。当然除了文件名，目标也可以是某个执行操作的名称，我们称这样的目标为“伪目标”。比如： <figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">clean:</span></span><br><span class="line">    rm *.o</span><br></pre></td></tr></table></figure> clean 不是一个文件名，而是一个执行操作的名称，它是一个伪目标，它的作用是删除工作目录中所有后缀为 o 的对象文件。当然，上面的声明仅仅是概念上的区分。在工作目录中执行 <code>make clean</code>，如果工作目录中存在文件 <code>clean</code>，这条命令将不会执行。因为 make 发现 clean 文件已经存在，就不会重新进行构建了。为了避免出现这种情况，我们可以明确声明 clean 是“伪目标”，写法如下： <figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta"><span class="meta-keyword">.PHONY</span>: clean</span></span><br><span class="line"><span class="section">clean:</span></span><br><span class="line">    rm *.o</span><br></pre></td></tr></table></figure> 默认情况下，make 执行 Makefile 中的第一个规则，此规则的第一个目标称之为“最终目的”或者“终极目标”，有点像是 grunt 或者 gulp 中的 default。</p>
+<h3 id="前置条件prerequisites">前置条件（prerequisites）</h3>
+<p>前置条件通常是一组用空格分隔的文件名。它表明了两件事情：一是此规则目标依赖哪些目标文件来触发重新构建，二是重建此规则目标需要先重建哪些规则目标。比如有以下规则： <figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">main: main.o util.o</span></span><br><span class="line">    cc main.o util.o -o main</span><br><span class="line"></span><br><span class="line"><span class="section">main.o: main.c</span></span><br><span class="line">    cc -c main.c</span><br><span class="line"></span><br><span class="line"><span class="section">util.o: util.c util.h</span></span><br><span class="line">    cc -c util.c</span><br></pre></td></tr></table></figure> main 的前置条件是 main.o 和 util.o。在构建目标 main 前，make 会先构建目标 main.o 和 util.o。如果无需构建 main.o 和 util.o，换句话说，也就是存在文件 main.o 和 util.o，且它们的最后修改时间戳最新，如果文件 main 存在，规则 main 也无需被构建。</p>
+<h3 id="命令command">命令（command）</h3>
+<p>规则的命令由一些 shell 命令组成，它们被一条一条的执行。命令表明了规则具体要做哪些操作，通常是更新目标文件。每条命令必须以 [tab] 字符开始，多个命令行之间可以有空行和注释行（空行是不包括任何字符的一行），在执行规则时空行会被忽略。如果希望用其他字符来代替 [tab]，可以指定 <a target="_blank" rel="noopener" href="https://www.gnu.org/software/make/manual/html_node/Special-Variables.html#Special-Variables">.RECIPEPREFIX</a>： <figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 使用 &gt; 来代替 [tab] 字符</span></span><br><span class="line">.RECIPEPREFIX = &gt;</span><br><span class="line"><span class="section">main.o: main.c</span></span><br><span class="line">&gt; cc -c main.c</span><br></pre></td></tr></table></figure> 需要注意的是每行命令的执行是在一个独立的 shell 进程中完成的。因此多行命令之间的执行是相互独立，不存在依赖的。当规则的命令中存在使用 cd 来改变工作目录时，其结果并不会对往后的命令产生任何影响。有以下几种方式来解决： <figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 方法一：将命令写在一行，用分号分隔</span></span><br><span class="line"><span class="section">var-kept:</span></span><br><span class="line">    <span class="keyword">export</span> foo=bar; echo <span class="string">&quot;foo=[$$foo]&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 方法二：使用反斜杠（\）来连接</span></span><br><span class="line"><span class="section">var-kept:</span></span><br><span class="line">    <span class="keyword">export</span> foo=bar; \</span><br><span class="line">    echo <span class="string">&quot;foo=[$$foo]&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 方法三：使用 .ONESHELL，该方式在GNU Make 3.82以上支持</span></span><br><span class="line"><span class="section">.ONESHELL:</span></span><br><span class="line"><span class="section">var-kept:</span></span><br><span class="line">    <span class="keyword">export</span> foo=bar</span><br><span class="line">    echo <span class="string">&quot;foo=[$$foo]&quot;</span></span><br></pre></td></tr></table></figure> 命令在运行结束之后，make 会检测命令执行的返回状态，如果返回成功，make 会启动下一个子 shell 来执行下一条命令。如果某条命令出错了（返回非0状态），make 就会放弃对当前规则往后命令的执行。可以在命令之前加一个减号“-”来告诉 make 忽略此命令的执行失败，比如： <figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">clean:</span></span><br><span class="line">    -rm *.o</span><br></pre></td></tr></table></figure> ## Makefile 变量 Makefile 允许变量定义，变量是使用一个字符或字符串来代表一段字符串，有点类似于 C 语言的宏。Makefile 中规则的目标、前置条件和命令都可引用变量。变量的引用比较简单，引用一个变量的形式是：<code>$(VAR_NAME)</code> 或 <code>$&#123;VAR_NAME&#125;</code>。</p>
+<p>在定义一个变量时，变量名不能包含 <code>:</code>、<code>#</code>、<code>=</code>、前置空白和尾空白。通常使用字母、数字和下划线来定义变量。同时，变量名是大小写敏感的。</p>
+<h3 id="变量定义">变量定义</h3>
+<p>Makefile 支持几种变量定义的方式，我们来一一说明。</p>
+<h4 id="递归展开式变量">递归展开式变量</h4>
+<p>使用等号来定义变量，格式为：<code>VAR_NAME = value</code>。这种变量在引用的地方是严格的文本替换过程，变量值的字符串会原样的出现在引用它的地方。比如下面例子： <figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">a = <span class="variable">$(b)</span></span><br><span class="line">b = <span class="variable">$(c)</span></span><br><span class="line">c = c</span><br><span class="line"></span><br><span class="line"><span class="section">main:</span></span><br><span class="line">    echo <span class="variable">$(a)</span></span><br></pre></td></tr></table></figure> 执行 make 会输出 c 。整个变量的替换过程是这样的：首先 <code>$(a)</code> 被替换为 <code>$(b)</code>，接着 <code>$(b)</code> 被替换为 <code>$(c)</code>，最后 <code>$(c)</code> 被替换为 c。整个替换过程是在执行 <code>echo $(a)</code> 时完成的。这种方式定义的变量可以引用其后定义的变量，并且支持递归展开，所以也称之为递归展开变量。也正因为如此，此风格的变量定义会导致 make 陷入到无限的变量展开过程中。比如： <figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">a = <span class="variable">$(b)</span></span><br><span class="line">b = <span class="variable">$(a)</span></span><br></pre></td></tr></table></figure> #### 直接展开式变量 另外一种变量定义是使用 <code>:=</code> ，格式为：<code>VAR_NAME := value</code>。这种变量的变量值是在定义变量时被展开的，所以变量被定义后就是一个实际需要的文本串，其中不再包含任何变量的引用。比如： <figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">a := a</span><br><span class="line">b := <span class="variable">$(a)</span> b</span><br><span class="line">a := after</span><br></pre></td></tr></table></figure> 其等价于： <figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">b := a b</span><br><span class="line">a := after</span><br></pre></td></tr></table></figure> 和递归式展开变量不同，此风格变量在定义时就完成了对所引用变量的展开，因此不能引用其后定义的变量。</p>
+<h4 id="多行定义">多行定义</h4>
+<p>指示符 define 可以定义一个包含多行字符串的变量，格式为： <figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">define</span> VAR_NAME</span><br><span class="line">    command</span><br><span class="line">    command</span><br><span class="line"><span class="keyword">endef</span></span><br></pre></td></tr></table></figure> ### 条件赋值 Makefile 可以使用 <code>?=</code> 来进行条件赋值，格式为 <code>VAR_NAME ?= value</code>。只有当变量在之前没有赋值的情况下才会对这个变量进行赋值。比如： <figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">a ?= b</span><br></pre></td></tr></table></figure> 其含义是：如果变量 a 在之前没有定义，就给它赋值 b，否则不改变它的值。</p>
+<h3 id="追加变量值">追加变量值</h3>
+<p>Makefile 使用 <code>+=</code> 来追加变量值，格式为 <code>VAR_NAME += value</code>。这使得我们可以先定义一个通用变量，然后在别的地方追加值。比如： <figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">objects = a.o b.o</span><br><span class="line">objects += c.o</span><br></pre></td></tr></table></figure> 相当于： <figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">objects = a.o b.o</span><br><span class="line">objects := <span class="variable">$(objects)</span> c.o</span><br></pre></td></tr></table></figure> 执行操作之后，objects 的值为 "a.o b.o c.o"。</p>
+<h3 id="override-指示符">override 指示符</h3>
+<p>在执行 make 时，如果通过命令行定义了一个变量，它将替代在 Makefile 中出现的同名变量。比如： <figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">a = a</span><br><span class="line"><span class="section">main:</span></span><br><span class="line">    echo <span class="variable">$(a)</span></span><br></pre></td></tr></table></figure> 执行命令 <code>make a=c</code>，终端会输出 c。如果不希望发生这种替代，只需要在变量定义前加上 override 即可。</p>
+<h2 id="makefile-条件判断">Makefile 条件判断</h2>
+<p>Makefile 使用 <code>ifeq</code>、<code>ifneq</code>、<code>ifdef</code>、<code>ifndef</code> 来进行条件判断，格式为： <figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">CONDITIONAL-DIRECTIVE</span><br><span class="line">TEXT-IF-TRUE</span><br><span class="line"><span class="keyword">else</span></span><br><span class="line">TEXT-IF-FALSE</span><br><span class="line"><span class="keyword">endif</span></span><br></pre></td></tr></table></figure> 比如以下例子： <figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">foo = bar</span><br><span class="line"><span class="keyword">ifeq</span> (<span class="variable">$(foo)</span>,bar)</span><br><span class="line">  foo_defined = yes</span><br><span class="line"><span class="keyword">else</span></span><br><span class="line">  foo_defined = no</span><br><span class="line"><span class="keyword">endif</span></span><br><span class="line"></span><br><span class="line"><span class="section">main:</span></span><br><span class="line">    echo <span class="variable">$(foo_defined)</span></span><br></pre></td></tr></table></figure> 执行 <code>make</code>，终端会输出 yes。这里有几个需要注意地方： - 条件判断<code>($(foo),bar)</code>中的逗号两边没有空格 - 条件体中的开头不能是 tab 字符，否则会被当作 Makefile 规则的一部分发送到 shell。这里的 <code>foo_defined</code> 前面使用了两个空格符来进行缩进</p>
+<h2 id="makefile-函数">Makefile 函数</h2>
+<p>Makefile 可以定义函数，函数调用的展开和变量引用的展开方式相同。函数的调用语法为： <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$(FUNCTION ARGUMENTS)</span><br><span class="line"># 或</span><br><span class="line">$&#123;FUNCTION ARGUMENTS&#125;</span><br></pre></td></tr></table></figure> <code>FUNCTION</code> 是函数名称，如果是自定义函数，需要使用内置的 <code>call</code> 来间接调用。<code>ARGUMENTS</code> 是函数参数，多个参数用逗号隔开。Makefile 提供了很多<a target="_blank" rel="noopener" href="https://www.gnu.org/software/make/manual/html_node/Functions.html">内置函数</a>，我们这里只是列出常用的几个。</p>
+<p><strong>subst函数</strong> subst 是字符串替换函数，其函数签名为 <code>$(subst from,to,text)</code>。比如： <figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$(<span class="built_in">subst</span> ee,EE,feet on the street)</span></span><br></pre></td></tr></table></figure> 替换 "feet on the street" 中的 "ee" 为 "EE"，结果为 "fEEt on the strEEt"。</p>
+<p><strong>patsubst函数</strong> patsubst 函数用于模式匹配的替换，函数签名为 <code>$(patsubst pattern,replacement,text)</code>。比如下面的例子将字符串 "x.c.c bar.c" 替换成 "x.c.o bar.o"。 <figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$(<span class="built_in">patsubst</span> %.c,%.o,x.c.c bar.c)</span></span><br></pre></td></tr></table></figure> <strong>wildcard函数</strong> wildcard 函数用于获取匹配模式文件名，函数签名为 <code>$(wildcard pattern)</code>。比如： <figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$(<span class="built_in">wildcard</span> *.c)</span></span><br></pre></td></tr></table></figure> 返回值为当前目录下所有 .c 源文件列表。</p>
+<h2 id="makefile-自动化变量">Makefile 自动化变量</h2>
+<p>Makefile 除了常规的规则之外，还支持模式规则，模式规则最大的特点就是目标名中包含有模式字符"%"，该字符用来模糊匹配文件名。比如模式规则 <code>%.o: %.c</code>，它表示的含义是所有的 .o 文件依赖于对应的 .c 文件。因为不能使用具体的文件名，规则命令中将无法引用需要操作的文件，为了解决这个问题，Makefile 内置了一些自动化变量。</p>
+<p><strong><span class="math inline">\(@** 表示 make 命令当前构建的目标名。比如： <figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">a.txt b.txt:</span><br><span class="line">    touch <span class="variable">$@</span></span><br></pre></td></tr></table></figure> 在构建过程中，\)</span>@ 分别指代 a.txt 和 b.txt。等同于： <figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">a.txt:</span></span><br><span class="line">    touch a.txt</span><br><span class="line"><span class="section">b.txt:</span></span><br><span class="line">    touch b.txt</span><br></pre></td></tr></table></figure> </strong><span class="math inline">\(&lt;** 规则的第一个依赖文件名。比如 `main.o: main.c util.c`，\)</span>&lt; 指代的是 main.c。</p>
+<p>**<span class="math inline">\(?** 所有比目标文件更新的依赖文件列表，空格分隔。比如规则 `main.o: main.c util.c`，如果 util.c 比 main.o 更新，\)</span>? 就指代 util.c。</p>
+<p>**<span class="math inline">\(^** 规则的所有依赖文件列表，空格分隔。比如规则 `main.o: main.c util.c`，\)</span>^ 指代 "main.c util.c"。</p>
+<p><strong>$*</strong> <span class="math inline">\(\* 指代匹配符 % 匹配的部分，比如 % 匹配 main.c 中的 main，\)</span>* 就指代 main。</p>
+<h2 id="一个例子">一个例子</h2>
+<p>一个简单的 C 语言项目，分别有 main.c、util.c、util.h 三个文件，文件内容如下： <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// util.h</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">hello</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// util.c</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&quot;util.h&quot;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">hello</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;Hello, Make!&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// main.c</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&quot;util.h&quot;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    hello();</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure> 编写 Makefile 内容为： <figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 定义变量</span></span><br><span class="line">objects = main.o util.o</span><br><span class="line"></span><br><span class="line"><span class="section">main: <span class="variable">$(objects)</span></span></span><br><span class="line">    cc <span class="variable">$(objects)</span> -o main</span><br><span class="line"></span><br><span class="line"><span class="comment"># 使用 Makefile 的隐含规则，同下面的写法：</span></span><br><span class="line"><span class="comment"># main.o:</span></span><br><span class="line"><span class="comment">#   cc -c main.c</span></span><br><span class="line"><span class="section">main.o: main.c</span></span><br><span class="line"><span class="section">util.o: util.c</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 定义伪目标</span></span><br><span class="line"><span class="meta"><span class="meta-keyword">.PHONY</span>: clean</span></span><br><span class="line"><span class="section">clean:</span></span><br><span class="line">    <span class="comment"># 命令前的减号表示忽略rm命令出现的错误</span></span><br><span class="line">    -rm main <span class="variable">$(objects)</span></span><br></pre></td></tr></table></figure> 执行 <code>make</code>，会编译输出 main，运行 <code>./main</code>，终端会输出 <code>Hello, Make!</code>。</p>
+<h2 id="参考">参考</h2>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://www.gnu.org/software/make/manual/make.html">GNU make</a></li>
+<li><a target="_blank" rel="noopener" href="http://www.ruanyifeng.com/blog/2015/02/make.html">Make 命令教程</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+      
+
+
+    <footer class="post-footer">
+          
+
+<div class="post-copyright">
+<ul>
+  <li class="post-copyright-author">
+      <strong>本文作者： </strong>gcfeng
+  </li>
+  <li class="post-copyright-link">
+      <strong>本文链接：</strong>
+      <a href="https://gcfeng.com/make/" title="make 基础教程">https://gcfeng.com/make/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/make/" rel="tag"># make</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/react-native-multiple-environments/" rel="prev" title="配置React Native多运行环境">
+                  <i class="fa fa-chevron-left"></i> 配置React Native多运行环境
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/swift-basic/" rel="next" title="Swift基础">
+                  Swift基础 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      const activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      const commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">gcfeng</span>
+</div>
+
+    </div>
+  </footer>
+
+  
+  <script src="//cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/medium-zoom@1.0.6/dist/medium-zoom.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/lozad@1.16.0/dist/lozad.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/pangu@4.0.7/dist/browser/pangu.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+</body>
+</html>
