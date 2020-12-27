@@ -2986,6 +2986,9 @@ mjx-container[display="true"] + br {
     padding: 10px 12px;
   }
 }
+.post-body {
+  text-align: initial;
+}
 @media (min-width: 1200px) {
   .post-body {
     font-size: 15px;
